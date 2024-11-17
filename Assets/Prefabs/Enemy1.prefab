@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2357812053094471869}
   - component: {fileID: 7237518673149366697}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Trigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,7 +81,8 @@ GameObject:
   - component: {fileID: 8644518011083662417}
   - component: {fileID: 1742906773694212299}
   - component: {fileID: 4497869065009149605}
-  m_Layer: 0
+  - component: {fileID: 4302749473741192374}
+  m_Layer: 7
   m_Name: Enemy1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -261,9 +262,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f925f6404eff9a4f875698c87416fda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackModule: {fileID: 4302749473741192374}
   healthPoint: 1
-  atkDamage: 1
-  atkPosition: {fileID: 2357812053094471869}
-  atkSize: {x: 0.5, y: 0.5}
   preAttackTime: 0.5
   cooldownTime: 1
+--- !u!114 &4302749473741192374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7781083973206193709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45cda7affed330843b0eea84d4ccda7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackDamage: 1
+  attackRange: 1
+  isAttackLeft: 1
+  attackSize: {x: 0.5, y: 0.5}
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 64

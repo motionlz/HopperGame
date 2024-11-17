@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class TileModule : MonoBehaviour
+public abstract class TileModule : MonoBehaviour, ISpawnObject
 {
     [SerializeField] private bool enableTrigger;
     [SerializeField] private float delayTime;

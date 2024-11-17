@@ -46,6 +46,8 @@ public class ObjectPooling : MonoBehaviour
         }
 
         GameObject spawnObj = poolDict[nameId].Dequeue();
+        if (spawnObj.TryGetComponent<ISpawnObject>(out var _module))
+            _module.ResetModule();
         spawnObj.SetActive(true);
         spawnObj.transform.position = position;
         spawnObj.transform.rotation = rotation;

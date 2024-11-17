@@ -1,26 +1,27 @@
-using System.Threading;
 using UnityEngine;
+using System;
+using System.Collections;
 using System.Threading.Tasks;
 
-public class EnemyModule : MonoBehaviour
+public class EnemyModule : MonoBehaviour, IDamageable, ISpawnObject
 {
+    [SerializeField] private AttackModule attackModule;
     [Header(("Enemy Stat"))]
     [SerializeField] private int healthPoint = 1;
-    [SerializeField] private int atkDamage = 1;
-    [SerializeField] private Transform atkPosition;
-    [SerializeField] private Vector2 atkSize = new Vector2(0.5f, 0.5f);
     [SerializeField] private float preAttackTime;
     [SerializeField] private float cooldownTime;
     
     private int currentHealth;
     private bool isAttacking = false;
+    public event Action OnDead;
     
     public void TakeDamage(int _damage)
     {
         currentHealth -= _damage;
         if (currentHealth <= 0)
         {
-            OnDead();
+            Dead();
+            OnDead?.Invoke();
         }
     }
 
@@ -30,7 +31,7 @@ public class EnemyModule : MonoBehaviour
         isAttacking = false;
     }
 
-    private void OnDead()
+    private void Dead()
     {
         gameObject.SetActive(false);
         isAttacking = false;
@@ -39,7 +40,8 @@ public class EnemyModule : MonoBehaviour
     {
         if (_col.CompareTag(GlobalTag.PLAYER_TAG) && !isAttacking)
         {
-            StartAttack();
+            //StartAttack();
+            StartCoroutine(AttackCoroutine());
         }
     }
 
@@ -49,29 +51,19 @@ public class EnemyModule : MonoBehaviour
         await Task.Delay((int)(preAttackTime * 1000));
         while (isAttacking)
         {
-           Attack(); 
+           attackModule.Attack(); 
            await Task.Delay((int)(cooldownTime * 1000)); 
         }
     }
 
-    private void Attack()
+    IEnumerator AttackCoroutine()
     {
-        if (!isAttacking) return;
-        RaycastHit2D[] _hit = Physics2D.BoxCastAll(
-            transform.position, atkSize, 0, Vector2.left
-        );
-        foreach (var _p in _hit)
+        isAttacking = true;
+        yield return new WaitForSeconds(preAttackTime);
+        while (isAttacking)
         {
-            if (_p.collider.TryGetComponent<PlayerStatus>(out PlayerStatus _player))
-            {
-                _player.TakeDamage(atkDamage);
-            }
+           attackModule.Attack(); 
+           yield return new WaitForSeconds(cooldownTime);
         }
-    }
-    private void OnDrawGizmosSelected()
-    {
-        if (atkPosition == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(atkPosition.position, atkSize);
     }
 }

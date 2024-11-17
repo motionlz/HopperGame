@@ -5,14 +5,11 @@ using UnityEngine.InputSystem;
 public class PlayerAction : PlayerModule
 {
     [SerializeField] private Animator animator;
+    [SerializeField] private AttackModule attackModule;
     [Header("Jump Settings")]
     [SerializeField] private float jumpHeight = 1f;
     [SerializeField] private float jumpDistance = 1f;
     [SerializeField] private float jumpDuration = 0.3f;
-    [Header("Attack Settings")]
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private Vector2 attackSize = new Vector2(0.5f, 0.5f);
-    [SerializeField] private float attackRange = 1f;
 
     private PlayerControl playerControl;
     private Vector3 startPosition;
@@ -84,29 +81,13 @@ public class PlayerAction : PlayerModule
     }
     private void AttackAction()
     {
-        RaycastHit2D[] _hit = Physics2D.BoxCastAll(
-            attackPoint.position, attackSize, 0, Vector2.right, attackRange
-        );
-        foreach (var _enemy in _hit)
-        {
-            if (_enemy.collider.TryGetComponent<EnemyModule>(out var _module))
-            {
-                _module.TakeDamage(1);
-            }
-        }
+        attackModule.Attack();
         animator.SetTrigger("Attack");
     }
     private void BlockAction()
     {
         playerState = PlayerState.Blocking;
         Debug.Log("Blocking");
-    }
-    private void OnDrawGizmosSelected()
-    {
-        if (attackPoint == null) return;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(attackPoint.position, attackSize);
     }
     private void Jump()
     {

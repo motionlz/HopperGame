@@ -132,7 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 152078215}
   - component: {fileID: 152078216}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: checkGround
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -203,10 +203,11 @@ GameObject:
   - component: {fileID: 187463980}
   - component: {fileID: 187463984}
   - component: {fileID: 187463979}
+  - component: {fileID: 187463988}
   - component: {fileID: 187463987}
   - component: {fileID: 187463985}
   - component: {fileID: 187463986}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -226,12 +227,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 187463986}
+  attackModule: {fileID: 187463988}
   jumpHeight: 1
   jumpDistance: 1
   jumpDuration: 0.3
-  attackPoint: {fileID: 187463983}
-  attackSize: {x: 0.5, y: 0.5}
-  attackRange: 1
 --- !u!50 &187463980
 Rigidbody2D:
   serializedVersion: 4
@@ -448,6 +447,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af897c73fe787ff4890795108d18ded2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &187463988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187463978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45cda7affed330843b0eea84d4ccda7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackDamage: 1
+  attackRange: 1
+  isAttackLeft: 0
+  attackSize: {x: 0.5, y: 0.5}
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &430163344
 GameObject:
   m_ObjectHideFlags: 0
@@ -781,7 +799,7 @@ GameObject:
   - component: {fileID: 1026140698}
   - component: {fileID: 1026140697}
   - component: {fileID: 1026140700}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: AttackHitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1092,6 +1110,9 @@ MonoBehaviour:
   - nameId: Broke_Tile
     poolSize: 10
     poolObject: {fileID: 2670957987421789228, guid: 6a02675b1740f36439772009224330e6, type: 3}
+  - nameId: Enemy_1
+    poolSize: 5
+    poolObject: {fileID: 7781083973206193709, guid: d4ae2d1df59cd3040bbb43884bf7d4ba, type: 3}
 --- !u!4 &1462700411
 Transform:
   m_ObjectHideFlags: 0
@@ -1145,12 +1166,17 @@ MonoBehaviour:
   maxRetainCount: 5
   maxPlatformCount: 10
   commonTileChance:
-  - TileName: Normal_Tile
-    SpawnChance: 2
-  - TileName: Fall_Tile
-    SpawnChance: 1
-  - TileName: Broke_Tile
-    SpawnChance: 1
+  - KeyName: Normal_Tile
+    Chance: 2
+  - KeyName: Fall_Tile
+    Chance: 1
+  - KeyName: Broke_Tile
+    Chance: 1
+  enemyChance: 2
+  maxChance: 10
+  enemyTypeChance:
+  - KeyName: Enemy_1
+    Chance: 2
 --- !u!4 &1551421530
 Transform:
   m_ObjectHideFlags: 0
@@ -1278,6 +1304,10 @@ PrefabInstance:
     - target: {fileID: 7781083973206193709, guid: d4ae2d1df59cd3040bbb43884bf7d4ba, type: 3}
       propertyPath: m_Name
       value: Enemy1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7781083973206193709, guid: d4ae2d1df59cd3040bbb43884bf7d4ba, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerStatus : PlayerModule
+public class PlayerStatus : PlayerModule, IDamageable
 {
     private int healthPoint = 3;
     

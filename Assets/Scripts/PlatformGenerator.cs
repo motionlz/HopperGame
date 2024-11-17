@@ -15,10 +15,13 @@ public class PlatformGenerator : MonoBehaviour
     [SerializeField]private int maxRandomStep = 3;
     [SerializeField]private int maxRetainCount = 5;
     [SerializeField]private int maxPlatformCount = 10;
-    [SerializeField]private List<TileSpawnChance> commonTileChance = new List<TileSpawnChance>();
+    [SerializeField]private List<SpawnChance> commonTileChance = new List<SpawnChance>();
 
     [Header("Enemy Settings")] 
-    [SerializeField]private float enemySpawnChance;
+    [Range(0,10)]
+    [SerializeField]private int enemyChance;
+    [SerializeField]private int maxChance = 10;
+    [SerializeField]private List<SpawnChance> enemyTypeChance = new List<SpawnChance>();
     
     
     private int retainCount;
@@ -28,6 +31,7 @@ public class PlatformGenerator : MonoBehaviour
     private int currentPosition = 0;
     private List<GameObject> platformsList = new List<GameObject>();
     private List<String> commonTilePool = new List<String>();
+    private List<String> enemyPool = new List<string>();
 
     public void Init()
     {
@@ -44,10 +48,10 @@ public class PlatformGenerator : MonoBehaviour
         targetStep = starterPlatformStep;
         for (int i = 0; i < starterPlatformCount; i++)
         {
-            GenerateNextPlatform(GlobalTileKey.NORMAL_TILE);
+            GenerateNextPlatform(GlobalTileKey.NORMAL_TILE,false);
         }
     }
-    private void GenerateNextPlatform(string _tileName = null)
+    private void GenerateNextPlatform(string _tileName = null,bool isSpawnable = true)
     {
         if (platformsList.Count > maxPlatformCount)
             DisablePlatformAt(0,true);
@@ -69,22 +73,25 @@ public class PlatformGenerator : MonoBehaviour
         {
             nextStep += (currentStep < targetStep) ? 1 : -1;
         }
-        
-        AddNewPlatform(_tileName ?? RandomTile(commonTilePool), nextStep);
+
+        _tileName = _tileName ?? RandomPool(commonTilePool);
+        var _position = new Vector2(currentPosition, CalculateByStep((nextStep)));
+
+        SpawnObjectFromPool(_tileName, _position, platformsList);
+        if(_tileName == GlobalTileKey.NORMAL_TILE && isSpawnable)
+            GenerateEnemy(_position);
+
         currentStep = nextStep;
         currentPosition++;
     }
-    private void AddNewPlatform(string _platformName, int _step)
+    private void GenerateEnemy(Vector2 _tilePosition, String _enemyKey = null)
     {
-        var _obj = ObjectPooling.Instance.GetFromPool
-            (_platformName, new Vector2(currentPosition, CalculateByStep((_step))), Quaternion.identity);
-        if (_obj.TryGetComponent<TileModule>(out var _tileModule))
+        if(Random.Range(1,maxChance + 1) <= enemyChance)
         {
-            _tileModule.ResetModule();
+            SpawnObjectFromPool(_enemyKey ?? RandomPool(enemyPool),_tilePosition + Vector2.up);
         }
-        platformsList.Add(_obj);
     }
-    private string RandomTile(List<String> _pool)
+    private string RandomPool(List<String> _pool)
     {
         return _pool[Random.Range(0, _pool.Count)];
     }
@@ -100,31 +107,36 @@ public class PlatformGenerator : MonoBehaviour
     {
         return platformStartHeight + (_step * platformDifferenceHeight);
     }
-
-    private void SpawnEnemy(string _enemyKey, int step)
+    
+    private void SpawnObjectFromPool(string _key, Vector2 _position, List<GameObject> _listToAdd = null)
     {
-        
+        var _obj = ObjectPooling.Instance.GetFromPool
+            (_key, _position, Quaternion.identity);
+        if (_listToAdd == null) return;
+        _listToAdd.Add(_obj);
     }
+
     private void SetUpAllPool()
     {
         SetUpChancePool(commonTilePool, commonTileChance);
+        SetUpChancePool(enemyPool, enemyTypeChance);
     }
-    private void SetUpChancePool(List<String> _pool,List<TileSpawnChance> _chances)
+    private void SetUpChancePool(List<String> _pool,List<SpawnChance> _chances)
     {
         _pool.Clear();
         foreach(var _c in _chances)
         {
-            for(int i = 0; i < _c.SpawnChance; i++)
+            for(int i = 0; i < _c.Chance; i++)
             {
-                _pool.Add(_c.TileName);
+                _pool.Add(_c.KeyName);
             }
         }
     }
 }
 
 [System.Serializable]
-public struct TileSpawnChance
+public struct SpawnChance
 {
-    public String TileName;
-    public float SpawnChance;
+    public String KeyName;
+    public float Chance;
 }
