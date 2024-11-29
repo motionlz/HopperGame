@@ -17,6 +17,7 @@ public class FallTile : TileModule
 
     public override void ResetModule()
     {
+        transform.localPosition = Vector3.zero;
         if (TryGetComponent<Rigidbody2D>(out Rigidbody2D _rb))
         {
             _rb.bodyType = RigidbodyType2D.Kinematic;

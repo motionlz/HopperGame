@@ -3,10 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : UnitModule
 {
     public PlayerAction PlayerActionModule { get; private set; }
-    public PlayerStatus PlayerStatusModule { get; private set; }
 
     public void Init()
     {
@@ -14,12 +13,22 @@ public class PlayerManager : MonoBehaviour
         {
             PlayerActionModule = GetComponent<PlayerAction>();
             PlayerActionModule.Init();
-            PlayerActionModule.AssignTo(this);
         }
-        if(PlayerStatusModule == null)
-        {
-            PlayerStatusModule = GetComponent<PlayerStatus>();
-            PlayerStatusModule.AssignTo(this);
-        }
+        
+        ResetUnit();
+    }
+    
+    public override void TakeDamage(int _damage)
+    {
+        if (PlayerActionModule.IsBlock()) return;
+        
+        base.TakeDamage(_damage);
+    }
+
+    protected override void Dead()
+    {
+        PlayerActionModule.enabled = false;
+        gameObject.SetActive(false);
+        base.Dead();
     }
 }

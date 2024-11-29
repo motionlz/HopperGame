@@ -1,18 +1,33 @@
 using System;
+using System.Collections;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class TileModule : MonoBehaviour, ISpawnObject
+public abstract class TileModule : MonoBehaviour, ISpawnObject, IInteractable
 {
-    [SerializeField] private bool enableTrigger;
-    [SerializeField] private float delayTime;
+    [SerializeField] protected float delayTime;
+    [SerializeField] private bool isLoop;
+    [SerializeField] protected GameObject baseTile;
     public event Action OnReset;
     public event Action OnTrigger;
     
+    protected bool isOn = true;
+    private Coroutine loopCoroutine;
+
+    public virtual void PlayModule()
+    {
+        StartLoop();
+    }
     public virtual void ResetModule()
     {
         OnReset?.Invoke();
+        StopLoop();
+    }
+
+    public void SetTileActive(bool _isActive)
+    {
+        baseTile.SetActive(_isActive);
     }
 
     protected virtual async void TriggerModuleAsync()
@@ -24,12 +39,29 @@ public abstract class TileModule : MonoBehaviour, ISpawnObject
     }
 
     protected virtual void TriggerModule() { }
-
-    private void OnTriggerEnter2D(Collider2D _col)
+    
+    public void OnInteract()
     {
-        if (enableTrigger && _col.CompareTag(GlobalTag.PLAYER_TAG))
-        {
-            TriggerModuleAsync();
-        }
+        TriggerModuleAsync();
+    }
+    
+    protected virtual void StartLoop()
+    {
+        if (!isLoop) return;
+        isOn = true;
+        loopCoroutine ??= StartCoroutine(LoopBehavior());
+    }
+    protected virtual void StopLoop()
+    {
+        if (loopCoroutine == null) return;
+        
+        StopCoroutine(loopCoroutine);
+        loopCoroutine = null;
+        isOn = false;
+    }
+
+    protected virtual IEnumerator LoopBehavior()
+    {
+        yield return null;
     }
 }

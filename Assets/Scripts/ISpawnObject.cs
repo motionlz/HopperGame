@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ISpawnObject 
+public interface ISpawnObject
 {
-    void ResetModule();
+    public void PlayModule();
+    public void ResetModule();
 }

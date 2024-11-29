@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerAction : PlayerModule
+public class PlayerAction : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private AttackModule attackModule;
@@ -10,7 +10,10 @@ public class PlayerAction : PlayerModule
     [SerializeField] private float jumpHeight = 1f;
     [SerializeField] private float jumpDistance = 1f;
     [SerializeField] private float jumpDuration = 0.3f;
-
+    
+    [Header("Shield Settings")]
+    [SerializeField] private GameObject shield;
+    
     private PlayerControl playerControl;
     private Vector3 startPosition;
     private Vector3 targetPosition;
@@ -19,7 +22,8 @@ public class PlayerAction : PlayerModule
     
     public event Action OnJump;
     public event Action OnAttack;
-    public event Action OnBlock; 
+    public event Action OnBlock;
+    public event Action OnLanded;
 
     private void Awake()
     {
@@ -35,6 +39,8 @@ public class PlayerAction : PlayerModule
         {
             Jump();
         }
+
+        SetShield();
     }
     private void OnEnable()
     {
@@ -81,6 +87,7 @@ public class PlayerAction : PlayerModule
     }
     private void AttackAction()
     {
+        playerState = PlayerState.OnTile;
         attackModule.Attack();
         animator.SetTrigger("Attack");
     }
@@ -99,6 +106,10 @@ public class PlayerAction : PlayerModule
         transform.position = new Vector3(_x, _y, transform.position.z);
     }
 
+    private void SetShield()
+    {
+        shield.SetActive(playerState == PlayerState.Blocking);
+    }
     public bool IsBlock()
     {
         return playerState == PlayerState.Blocking;
@@ -113,8 +124,14 @@ public class PlayerAction : PlayerModule
             var _pos = transform.position;
             _pos.x = Mathf.RoundToInt(_pos.x);
             transform.position = _pos;
+            
+            OnLanded?.Invoke();
         }
-        
+
+        if (_col.TryGetComponent<IInteractable>(out IInteractable _object))
+        {
+            _object?.OnInteract();
+        }
     }
     private void OnTriggerExit2D(Collider2D _col)
     {

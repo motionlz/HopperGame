@@ -3,60 +3,35 @@ using System;
 using System.Collections;
 using System.Threading.Tasks;
 
-public class EnemyModule : MonoBehaviour, IDamageable, ISpawnObject
+public class EnemyModule : UnitModule, ISpawnObject
 {
     [SerializeField] private AttackModule attackModule;
     [Header(("Enemy Stat"))]
-    [SerializeField] private int healthPoint = 1;
-    [SerializeField] private float preAttackTime;
-    [SerializeField] private float cooldownTime;
+    [SerializeField] protected float preAttackTime;
+    [SerializeField] protected float cooldownTime;
     
-    private int currentHealth;
     private bool isAttacking = false;
-    public event Action OnDead;
-    
-    public void TakeDamage(int _damage)
-    {
-        currentHealth -= _damage;
-        if (currentHealth <= 0)
-        {
-            Dead();
-            OnDead?.Invoke();
-        }
-    }
 
-    public void ResetModule()
+    public virtual void ResetModule()
     {
-        currentHealth = healthPoint;
+        ResetUnit();
         isAttacking = false;
     }
 
-    private void Dead()
+    protected override void Dead()
     {
         gameObject.SetActive(false);
-        isAttacking = false;
+        ObjectPooling.Instance.ReturnToPool(gameObject);
     }
     private void OnTriggerEnter2D(Collider2D _col)
     {
         if (_col.CompareTag(GlobalTag.PLAYER_TAG) && !isAttacking)
         {
-            //StartAttack();
             StartCoroutine(AttackCoroutine());
         }
     }
 
-    private async void StartAttack()
-    {
-        isAttacking = true;
-        await Task.Delay((int)(preAttackTime * 1000));
-        while (isAttacking)
-        {
-           attackModule.Attack(); 
-           await Task.Delay((int)(cooldownTime * 1000)); 
-        }
-    }
-
-    IEnumerator AttackCoroutine()
+    protected virtual IEnumerator AttackCoroutine()
     {
         isAttacking = true;
         yield return new WaitForSeconds(preAttackTime);
@@ -66,4 +41,6 @@ public class EnemyModule : MonoBehaviour, IDamageable, ISpawnObject
            yield return new WaitForSeconds(cooldownTime);
         }
     }
+    
+    public void PlayModule() { }
 }

@@ -18,9 +18,6 @@ public class PlatformGenerator : MonoBehaviour
     [SerializeField]private List<SpawnChance> commonTileChance = new List<SpawnChance>();
 
     [Header("Enemy Settings")] 
-    [Range(0,10)]
-    [SerializeField]private int enemyChance;
-    [SerializeField]private int maxChance = 10;
     [SerializeField]private List<SpawnChance> enemyTypeChance = new List<SpawnChance>();
     
     
@@ -77,7 +74,9 @@ public class PlatformGenerator : MonoBehaviour
         _tileName = _tileName ?? RandomPool(commonTilePool);
         var _position = new Vector2(currentPosition, CalculateByStep((nextStep)));
 
-        SpawnObjectFromPool(_tileName, _position, platformsList);
+        var _obj = SpawnObjectFromPool(_tileName, _position, platformsList);
+        _obj.GetComponent<TileModule>().SetTileActive(true);
+        
         if(_tileName == GlobalTileKey.NORMAL_TILE && isSpawnable)
             GenerateEnemy(_position);
 
@@ -86,34 +85,43 @@ public class PlatformGenerator : MonoBehaviour
     }
     private void GenerateEnemy(Vector2 _tilePosition, String _enemyKey = null)
     {
-        if(Random.Range(1,maxChance + 1) <= enemyChance)
-        {
-            SpawnObjectFromPool(_enemyKey ?? RandomPool(enemyPool),_tilePosition + Vector2.up);
-        }
+        SpawnObjectFromPool
+            (_enemyKey ?? RandomPool(enemyPool),_tilePosition + Vector2.up);
     }
     private string RandomPool(List<String> _pool)
     {
         return _pool[Random.Range(0, _pool.Count)];
     }
+
+    public int GetTileIndex(GameObject _obj)
+    {
+        return platformsList.IndexOf(_obj);
+    }
     public void DisablePlatformAt(int _index, bool _isRemove = false)
     {
+        if (_index < 0 || _index >= platformsList.Count) return;
+        
         var _obj = platformsList[_index];
-        _obj.SetActive(false);
+        _obj.GetComponent<TileModule>().SetTileActive(false);
 
-        if (_isRemove)
-            platformsList.RemoveAt(_index);
+        if (!_isRemove) return;
+        platformsList.RemoveAt(_index);
+        ObjectPooling.Instance.ReturnToPool(_obj);
     }
     private float CalculateByStep(int _step)
     {
         return platformStartHeight + (_step * platformDifferenceHeight);
     }
     
-    private void SpawnObjectFromPool(string _key, Vector2 _position, List<GameObject> _listToAdd = null)
+    private GameObject SpawnObjectFromPool(string _key, Vector2 _position, List<GameObject> _listToAdd = null)
     {
+        if (_key == GlobalTileKey.EMPTY) return null;
         var _obj = ObjectPooling.Instance.GetFromPool
             (_key, _position, Quaternion.identity);
-        if (_listToAdd == null) return;
-        _listToAdd.Add(_obj);
+
+        _listToAdd?.Add(_obj);
+
+        return _obj;
     }
 
     private void SetUpAllPool()
